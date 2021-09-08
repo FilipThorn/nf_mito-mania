@@ -1,0 +1,11 @@
+channels:
+ - conda-forge
+ - bioconda
+ - default
+dependencies:
+ - bwa=0.7.17
+ - freebayes=1.3.2
+ - samtools=1.12
+ - bcftools=1.12
+ - vcflib=1.0.2
+ - seqtk=1.3
