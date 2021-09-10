@@ -1,4 +1,39 @@
-# nf_mitomania
-Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checked scaffold by mapping reads to it using bra mem and calls variants in freebies for a consensus sequence. 
+# nf_mito-mania
+Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checked scaffold by mapping reads to it using bra mem and calls variants in freebayes for a consensus sequence. 
 
-This document is being updated.
+## Workflow
+
+1) Install [`nextflow`](https://www.nextflow.io/) (version >= 19.04)
+
+2) Install [`Conda`](https://conda.io/miniconda.html) (version >= 4.10) 
+
+3) Install [`mitobim`](https://github.com/chrishah/MITObim)
+   
+4) Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/)
+
+5) Download git clone of this repository:
+   ```bash
+   git clone https://github.com/FilipThorn/nf_mito-mania
+   ```
+6) Edit nextflow.config file:
+   ```bash
+   mitobim = "/PATH/TO/MITObim.pl"
+   mitobimRef = "/PATH/TO/lycPyr_mtDNA.fa"
+   ref_strain = "lycPyr_mtDNA"
+   mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"
+   mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"
+   ```
+7) Make mitobim scaffold:
+   ```bash
+   nextflow run mitobim_reference.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --outdir /PATH/TO/RESULTS
+   ```
+   *Check mitobim scaffolds* 
+   
+8) Map reads to mitobim scaffold, call varient sites and build consensus:
+   ```bash
+   nextflow run map_reads.nf --ref '/RESULTS/3.IndexRefs/Indivxxx_L001_U/*.fasta' --outdir /RESULTS --reads_PE '/*_R{1,2}.fastq.gz' --reads_SE '/*_U.fastq.gz'
+   ```
+ 
+ ## HPC enviroment
+Use of a HPC is recomended. Create a nextflow config profile that matches your cluster set-up [`profile`]( https://www.nextflow.io/docs/latest/config.html#config-profiles)
+ 
