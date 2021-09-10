@@ -6,7 +6,7 @@ Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checke
 1) Install [`nextflow`](https://www.nextflow.io/) (version >= 19.04) \
    Install [`Conda`](https://conda.io/miniconda.html) (version >= 4.10) \
    Install [`mitobim`](https://github.com/chrishah/MITObim) \
-   Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/) \
+   Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/) 
 
 2) Download git clone of this repository:
    ```bash
