@@ -4,18 +4,15 @@ Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checke
 ## Workflow
 
 1) Install [`nextflow`](https://www.nextflow.io/) (version >= 19.04)
+   Install [`Conda`](https://conda.io/miniconda.html) (version >= 4.10) 
+   Install [`mitobim`](https://github.com/chrishah/MITObim)
+   Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/)
 
-2) Install [`Conda`](https://conda.io/miniconda.html) (version >= 4.10) 
-
-3) Install [`mitobim`](https://github.com/chrishah/MITObim)
-   
-4) Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/)
-
-5) Download git clone of this repository:
+2) Download git clone of this repository:
    ```bash
    git clone https://github.com/FilipThorn/nf_mito-mania
    ```
-6) Edit nextflow.config file:
+3) Edit nextflow.config file:
    ```bash
    mitobim = "/PATH/TO/MITObim.pl"
    mitobimRef = "/PATH/TO/lycPyr_mtDNA.fa"
@@ -23,13 +20,13 @@ Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checke
    mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"
    mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"
    ```
-7) Make mitobim scaffold:
+4) Make mitobim scaffold:
    ```bash
    nextflow run mitobim_reference.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --outdir /PATH/TO/RESULTS
    ```
    *Check mitobim scaffolds* 
    
-8) Map reads to mitobim scaffold, call varient sites and build consensus:
+5) Map reads to mitobim scaffold, call varient sites and build consensus:
    ```bash
    nextflow run map_reads.nf --ref '/RESULTS/3.IndexRefs/Indivxxx_L001_U/*.fasta' --outdir /RESULTS --reads_PE '/*_R{1,2}.fastq.gz' --reads_SE '/*_U.fastq.gz'
    ```
