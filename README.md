@@ -1,5 +1,5 @@
 # nf_mito-mania
-Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checked scaffold by mapping reads to it using bra mem and calls variants in freebayes for a consensus sequence. 
+Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks the scaffold by mapping reads to it using bwa mem, and calling variants in freebayes to obtain a consensus sequence. 
 
 ## Workflow
 
@@ -14,23 +14,19 @@ Nextflow pipeline that assembles mitochondria scaffolds using mitobim and checke
    ```
 3) Edit nextflow.config file:
    ```bash
-   mitobim = "/PATH/TO/MITObim.pl"
-   mitobimRef = "/PATH/TO/lycPyr_mtDNA.fa"
-   ref_strain = "lycPyr_mtDNA"
-   mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"
-   mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"
+   mitobim = "/PATH/TO/MITObim.pl"                                    #path to MITObim script
+   mitobimRef = "/PATH/TO/lycPyr_mtDNA.fa"                            #refernce for mitobim and mira
+   ref_strain = "lycPyr_mtDNA"                                        #name of refernce for mitobim and mira
+   mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"     #path to mira
+   mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"      #path to mira dir
    ```
-4) Make mitobim scaffold:
+4) Run Mitomania workflow:
    ```bash
-   nextflow run mitobim_reference.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --outdir /PATH/TO/RESULTS
+   nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS
    ```
-   *Check mitobim scaffolds* 
    
-5) Map reads to mitobim scaffold, call varient sites and build consensus:
-   ```bash
-   nextflow run map_reads.nf --ref '/RESULTS/3.IndexRefs/Indivxxx_L001_U/*.fasta' --outdir /RESULTS --reads_PE '/*_R{1,2}.fastq.gz' --reads_SE '/*_U.fastq.gz'
-   ```
- 
- ## HPC enviroment
+##Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing. 
+    
+## HPC enviroment
 Use of a HPC is recomended. Create a nextflow config profile that matches your cluster set-up [`profile`]( https://www.nextflow.io/docs/latest/config.html#config-profiles)
  
