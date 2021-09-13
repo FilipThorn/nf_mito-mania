@@ -1,5 +1,5 @@
 # nf_mito-mania
-Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks the scaffold by mapping reads to it using bwa mem, and calling variants in freebayes to obtain a consensus sequence. 
+Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks the scaffold by mapping reads to it using bwa mem, and calling variants in freebayes to obtain a consensus sequence. Workflow is based on a [`Mozes Blom`](https://github.com/MozesBlom/mitogenome) pipeline.
 
 ## Workflow
 
