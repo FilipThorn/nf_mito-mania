@@ -295,9 +295,9 @@ process LibMerge{
 
 free_ch = ref2.combine(mapped_ch, by:0)
 
-process VarientCall{
+process VariantCall{
 
-    publishDir "${params.outdir}/5.Varientcall/$sample_id", mode:'copy'
+    publishDir "${params.outdir}/5.Variantcall/$sample_id", mode:'copy'
 
     tag "$sample_id"
 
