@@ -24,10 +24,10 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
    ```bash
    nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS
    ```
-\
-\
-\
-  
+&nbsp;
+&nbsp;
+&nbsp;
+
 *Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing.*  \
 Input file structure
 ```bash
@@ -37,8 +37,9 @@ Indivxxx_L002_U.fastq.gz Indivxxx_L002_R2.fastq.gz Indivxxx_L002_R1.fastq.gz
 Indivxxx_L003_U.fastq.gz Indivxxx_L003_R2.fastq.gz Indivxxx_L003_R1.fastq.gz
 Indivxxx_L004_U.fastq.gz Indivxxx_L004_R2.fastq.gz Indivxxx_L004_R1.fastq.gz 
 ```
-\
-\
+&nbsp;
+&nbsp;
+
 ## HPC enviroment
 Use of a HPC is recomended. Create a nextflow config profile that matches your cluster set-up [`profile`]( https://www.nextflow.io/docs/latest/config.html#config-profiles)
  
