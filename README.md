@@ -25,7 +25,7 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
    nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS
    ```
    
-## ***Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing.
+***Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing.
 ```bash
 usr:~data/$ ls
 Indivxxx_L001_U.fastq.gz Indivxxx_L001_R2.fastq.gz Indivxxx_L001_R1.fastq.gz 
