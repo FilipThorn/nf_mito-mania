@@ -28,9 +28,9 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
 ## ***Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing.
 ```bash
 usr:~data/$ ls
-Indivxxx_L001_U.fastq.gz Indivxxx_L001_R2.fastq.gz Indivxxx_L001_R1.fastq.gz \
-Indivxxx_L002_U.fastq.gz Indivxxx_L002_R2.fastq.gz Indivxxx_L002_R1.fastq.gz \
-Indivxxx_L003_U.fastq.gz Indivxxx_L003_R2.fastq.gz Indivxxx_L003_R1.fastq.gz \
+Indivxxx_L001_U.fastq.gz Indivxxx_L001_R2.fastq.gz Indivxxx_L001_R1.fastq.gz 
+Indivxxx_L002_U.fastq.gz Indivxxx_L002_R2.fastq.gz Indivxxx_L002_R1.fastq.gz
+Indivxxx_L003_U.fastq.gz Indivxxx_L003_R2.fastq.gz Indivxxx_L003_R1.fastq.gz
 Indivxxx_L004_U.fastq.gz Indivxxx_L004_R2.fastq.gz Indivxxx_L004_R1.fastq.gz 
 ```
     
