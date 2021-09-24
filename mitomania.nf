@@ -111,7 +111,7 @@ process manifest {
 
     script:
     """
-    manifest.sh $sample_id $params.mitobimRef $params.ref_strain "${params.outdir}/1.SubsetReadsMB/$sample_id/${sub}" manifest.conf
+    manifest.sh $sample_id $params.mitobimRef $params.ref_strain "${params.outdir}/1.SubsetReads/$sample_id/${sub}" manifest.conf
     """
 }
 
