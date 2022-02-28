@@ -61,7 +61,7 @@ log.info """\
 
 // Channel for MITObim reads
    Channel.fromPath( params.reads_MB)
-         .map { it -> [it.name -  ~/\.fastq\.gz/, it] }
+         .map { it -> [it.name.tokenize("_")[0], it] }
          .set { reads_MB_ch }
 
 // Channels for bwa reads
@@ -145,8 +145,6 @@ process mira {
 subset_comb_mira.combine( mira_ch, by: 0 )
     .set { reads_comb_mira } 
 
-// define the regexp pattern
-ID_post = ~/_L00\d_U/
 
 process mitobim {
     
@@ -154,30 +152,26 @@ process mitobim {
     
     label 'HIGH_RAM'
 
-    publishDir "${params.outdir}/3.Index/$Id", mode:'copy'
+    publishDir "${params.outdir}/3.Index/$sample_id", mode:'copy'
     publishDir "${params.outdir}/2.Mitobim/$sample_id", pattern: '*.log', mode:'copy'
     input:
     tuple val(sample_id), file("${sample_id}_subset.fastq") , file("${sample_id}.maf") from reads_comb_mira
     
     output:
     file("${sample_id}.log")
-    tuple val(Id), file("${sample_id}-lycPyr_mtDNA-it*_noIUPAC.fasta") into mitobim_ch
+    tuple val(sample_id), file("${sample_id}.fa") into mitobim_ch
 
     script:
-    Id = ("${sample_id}" - ID_post)
     """
     $params.mitobim -start 1 -end 100 -sample $sample_id -ref $params.ref_strain -readpool "${sample_id}_subset.fastq" -maf "${sample_id}.maf" --clean --mirapath $params.mira_dir &> ${sample_id}.log
 
-    cp ./iteration*/*_noIUPAC.fasta ./
+    cp ./iteration*/*_noIUPAC.fasta ./${sample_id}.fa
     """
 }
 
 // pipe ref into seperate channels 
 mitobim_ch.into {ref; ref2; ref3}
                  
-
-// define the regexp pattern
-lib = ~/_L00\d/
 
 process BWA_Index {
 
@@ -189,43 +183,39 @@ process BWA_Index {
     tuple val(sample_id), file(ref) from ref
 
     output:
-    tuple val("${sample_id}_L001"), file("${sample_id}"), path("*.{amb,ann,bwt,pac,sa}") into index1
-    tuple val("${sample_id}_L002"), file("${sample_id}"), path("*.{amb,ann,bwt,pac,sa}") into index2
-    tuple val("${sample_id}_L003"), file("${sample_id}"), path("*.{amb,ann,bwt,pac,sa}") into index3
-    tuple val("${sample_id}_L004"), file("${sample_id}"), path("*.{amb,ann,bwt,pac,sa}") into index4
+    tuple val("${sample_id}_L001"), val("${sample_id}"), file("${sample_id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index1
+    tuple val("${sample_id}_L002"), val("${sample_id}"), file("${sample_id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index2
+    tuple val("${sample_id}_L003"), val("${sample_id}"), file("${sample_id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index3
+    tuple val("${sample_id}_L004"), val("${sample_id}"), file("${sample_id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index4
 
 
     script:
     """
-    bwa index $ref -p ${sample_id}
-    cp $ref $sample_id
+    bwa index $ref -p ${sample_id}.fa
     """
 }
 
 //mix
 index1.mix(index2,index3,index4).into{index_SE; index_PE}
-
 //combine
 
-bwa_SE = reads_SE.combine(index_SE, by:0)
+bwa_SE = index_SE.combine(reads_SE, by:0)
 
-bwa_PE = reads_PE.combine(index_PE, by:0)
-
+bwa_PE = index_PE.combine(reads_PE, by:0)
 
 process BWA_mem_SE {    
 
     tag "$sample_id"    
-    
     input:
-    tuple val(sample_id), file(sample), file(ref), file(index) from bwa_SE
+    tuple val(sample_id), val(sample), file(ref), file(index), file(reads) from bwa_SE
 
     output:
-    tuple val(sample_id), file("*") into aln_SE
+    tuple val(sample_id), file("${sample_id}_mito_sorted_SE.bam") into aln_SE
 
     script:
-    RG_id = ("${sample_id}" - lib)
     """
-    bwa mem $ref $sample -t ${task.cpus} -R "@RG\\tID:${sample_id}\\tSM:${RG_id}\\tPL:ILLUMINA" > ${sample_id}_mito_SE.sam 
+    bwa mem $ref $reads -t ${task.cpus} -R "@RG\\tID:${sample_id}\\tSM:${sample}\\tPL:ILLUMINA" > ${sample_id}_mito_SE.sam 
+    samtools view -bS ${sample_id}_mito_SE.sam | samtools sort -@ ${task.cpus} -O bam -o ${sample_id}_mito_sorted_SE.bam
     """
 }
 
@@ -233,17 +223,16 @@ process BWA_mem_SE {
 process BWA_mem_PE {
 
     tag "$sample_id"
-
     input:
-    tuple val(sample_id), file(pairs) ,file(ref), file(index) from bwa_PE
+    tuple val(sample_id), val(sample), file(ref), file(index), file(pairs) from bwa_PE
 
     output:
-    tuple val(sample_id), file("*") into aln_PE
+    tuple val(sample_id), file("${sample_id}_mito_sorted_PE.bam") into aln_PE
 
     script:
-    RG_id = ("${sample_id}" - lib)
     """
-    bwa mem $ref $pairs -t ${task.cpus} -R "@RG\\tID:${sample_id}\\tSM:${RG_id}\\tPL:ILLUMINA" > ${sample_id}_mito_PE.sam
+    bwa mem $ref $pairs -t ${task.cpus} -R "@RG\\tID:${sample_id}\\tSM:${sample}\\tPL:ILLUMINA" > ${sample_id}_mito_PE.sam
+    samtools view -bS ${sample_id}_mito_PE.sam | samtools sort -@ ${task.cpus} -O bam -o ${sample_id}_mito_sorted_PE.bam
     """
 }
 
@@ -252,26 +241,24 @@ aln_ch = aln_SE.combine(aln_PE, by:0)
 process SamtoolsSortMerge{
         
     tag "$sample_id"
-    
     input:
     tuple val(sample_id), file(aln_SE), file(aln_PE) from aln_ch
     
     output:
-    tuple val(merge_id), file("${sample_id}_mito_sorted.bam") into sam_ch
+    tuple val(sample_id), file("${sample_id}_mito_sorted.bam") into sam_ch
     file("${sample_id}_mito_sorted.bam.bai")
 
     script:
-    merge_id = ("${sample_id}" - lib)
     """
-    samtools view -bS $aln_SE | samtools sort -@ ${task.cpus} -O bam -o ${sample_id}_mito_sorted_SE.bam 
-    samtools view -bS $aln_PE | samtools sort -@ ${task.cpus} -O bam -o ${sample_id}_mito_sorted_PE.bam 
-    samtools merge -@ ${task.cpus} ${sample_id}_mito_sorted.bam ${sample_id}_mito_sorted_PE.bam ${sample_id}_mito_sorted_SE.bam 
-    samtools index ${sample_id}_mito_sorted.bam
+    samtools merge -@ ${task.cpus} ${sample_id}_mito_sorted.bam $aln_PE $aln_SE 
+    samtools index -b ${sample_id}_mito_sorted.bam
     """
 }
 
 //groupTuple for library merging
-sam_all = sam_ch.groupTuple(by: 0, sort: true, size: 4)
+sam_all = sam_ch.map { prefix, bam -> tuple ( prefix.tokenize("_")[0], bam) }
+
+group_sam_all = sam_all.groupTuple(by: 0, sort: true, size: 4)
 
 process LibMerge{
 
@@ -280,20 +267,20 @@ process LibMerge{
     tag "$sample_id"
 
     input:
-    tuple val(sample_id), file(bams) from sam_all
+    tuple val(sample_id), file(bams) from group_sam_all
 
     output:
+    tuple val(sample_id), file("${sample_id}_mito_merge_sorted.bam") into mapped_ch
     file("*")
-    tuple val(sample_id), file("${sample_id}_mito_sorted.bam") into mapped_ch
 
     script:
     """
-    samtools merge -@ ${task.cpus} ${sample_id}_mito_sorted.bam $bams 
-    samtools index ${sample_id}_mito_sorted.bam
+    samtools merge -@ ${task.cpus} ${sample_id}_mito_merge_sorted.bam $bams 
+    samtools index -b ${sample_id}_mito_merge_sorted.bam
     """
 }
 
-free_ch = ref2.combine(mapped_ch, by:0)
+ref2.combine(mapped_ch, by:0).into{free_ch; mask_ch}
 
 process VariantCall{
 
@@ -302,27 +289,57 @@ process VariantCall{
     tag "$sample_id"
 
     input:
-    tuple val(sample_id), file(ref), file(bams) from free_ch
+    tuple val(sample_id), file(ref), file(bam) from free_ch
 
     output:
+    file("${sample_id}_ploidy2.vcf.gz")
     tuple val(sample_id), file("${sample_id}.vcf.gz") into vcf_ch
-    
+
     script:
-    """
-    freebayes -f $ref $bams --ploidy 1 | vcffilter -f "QUAL > 20" > ${sample_id}.vcf
-    bgzip -c ${sample_id}.vcf > ${sample_id}.vcf.gz
+    """   
+    freebayes -f $ref $bam > ${sample_id}_ploidy2.vcf
+    vcffilter -f "TYPE = snp & ( AB = 0 | AB < 0.1 )" ${sample_id}_ploidy2.vcf > ${sample_id}.vcf
+    bgzip -c ${sample_id}_ploidy2.vcf > ${sample_id}_ploidy2.vcf.gz
+    bgzip -c  ${sample_id}.vcf > ${sample_id}.vcf.gz
     """
 }
 
 
+process mask {
+
+    publishDir "${params.outdir}/6.masks/$sample_id", mode:'copy'
+    
+    tag "$sample_id"
+
+    input:
+    tuple val(sample_id), file(ref), file(bam) from mask_ch
+    
+    output:
+    tuple val(sample_id), file("${sample_id}_mask_maxDP_*.txt") into bed_ch
+    file("*")
+    
+    script:
+    """
+    samtools depth -aa $bam -o ${sample_id}_depth.txt
+
+    mask.sh ${sample_id}_depth.txt $sample_id   
+    """
+}
+
 cons_ch = ref3.combine( vcf_ch, by: 0)
+
+
+cons_mask_ch = cons_ch.combine( bed_ch, by: 0)
+
 
 process CallConsensus {
 
-    publishDir "${params.outdir}/6.consensus/$sample_id", mode:'copy'
+    publishDir "${params.outdir}/7.consensus/$sample_id", mode:'move'
+    
+    tag "$sample_id"
 
     input:
-    tuple val(sample_id), file(MB), file(vcf) from cons_ch
+    tuple val(sample_id), file(MB), file(vcf), file(mask) from cons_mask_ch
 
     output:
     file("*")
@@ -330,7 +347,7 @@ process CallConsensus {
     script:
     """
     bcftools index $vcf
-    bcftools consensus -f $MB -o ${sample_id}_consensus_mito.fa -s ${sample_id} $vcf
+    bcftools consensus -f $MB -m $mask -o ${sample_id}_consensus_mito.fa -s ${sample_id} $vcf
     sed -i "s/>.*/>${sample_id}/" ${sample_id}_consensus_mito.fa
     """
 }
