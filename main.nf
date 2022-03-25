@@ -67,7 +67,6 @@ channel
         .map { row -> tuple(row.Individual, file(row.Unpaired_fn)) }
         .groupTuple(by: 0)
         .into { mitobim_ch; SE_ch }
-}
 
 channel
         .fromPath(params.input_tsv_fn)
@@ -75,8 +74,6 @@ channel
         .map { row -> tuple(row.Individual, file(row.R1_fn), file(row.R2_fn)) }
         .groupTuple(by: 0)
         .set { PE_ch }
-}
-
 
 process Subsample {
 
