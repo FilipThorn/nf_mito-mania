@@ -62,19 +62,11 @@ log.info """\
 
 
 channel
-	.fromPath(params.input_tsv_fn)
-	.splitCsv(header:true, sep:'\t')
-	.map { row -> tuple(row.Individual, file(row.Unpaired_fn)) }
-	.groupTuple(by: 0)
-	.set { mitobim_ch }
-}
-
-channel
         .fromPath(params.input_tsv_fn)
         .splitCsv(header:true, sep:'\t')
         .map { row -> tuple(row.Individual, file(row.Unpaired_fn)) }
         .groupTuple(by: 0)
-        .set { SE_ch }
+        .into { mitobim_ch; SE_ch }
 }
 
 channel
