@@ -19,9 +19,6 @@ if (params.help) {
             nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS         
             
             'Mandatory arguments:'
-            --reads_MB               Path to unpaired reads for MITObim backbone. i.e Indivxxx_L001_U.fastq.gz
-            --reads_PE               Path to paired reads 
-            --reads_SE               Path to unpaired reads
             --outdir                 Path to output directory
             
             'OPTIONS'
@@ -52,9 +49,7 @@ log.info """\
          Mitomania 
          NEXTFLOW   P I P E L I N E                
          –––––––––––––––––––––––––––––––––––––––
-         reads_MB     : ${params.reads_MB}
-         reads_PE     : ${params.reads_PE}
-         reads_SE     : ${params.reads_SE}
+         reads_table     : ${params.input_tsv_fn}
          outdir       : ${params.outdir}
          subset_size  : ${params.subset_size}
          """
@@ -85,13 +80,15 @@ process Subsample {
     tuple val(id), file(bb) from mitobim_ch
 
     output:
-    tuple val(id), file("${id}_subset.fastq" ) into subset_ch.into{ subset_ch; subset_comb; subset_comb_mira}
+    tuple val(id), file("${id}_subset.fastq" ) into subset_ch
 
     script:
     """
-    seqtk sample -s1234 $read $params.subset_size > ${id}_subset.fastq
+    seqtk sample -s1234 $bb $params.subset_size > ${id}_subset.fastq
     """
 }
+
+subset_ch.into{ subset_ch; subset_comb; subset_comb_mira}
 
 process manifest {
     
@@ -105,7 +102,7 @@ process manifest {
     tuple val(id), file(sub) from subset_ch
 
     output:
-    tuple val(id), file("manifest.conf") into mani_ch.combine(subset_comb, by:0)
+    tuple val(id), file("manifest.conf") into mani_ch
 
     script:
     """
@@ -113,6 +110,8 @@ process manifest {
     """
 }
 
+mani_ch.combine(subset_comb, by:0)
+    .set { mani_ch }
 
 process mira {
     
@@ -130,7 +129,7 @@ process mira {
     file ("${id}_assembly/${id}_d_info/*")
     file ("${id}_assembly/${id}_d_results/*")
     file ("${id}_assembly/${id}_d_tmp/*")
-    tuple val(id), file("${id}_assembly/${id}_d_results/${id}_out.maf") into mira_ch.combine(subset_comb_mira, by:0)
+    tuple val(id), file("${id}_assembly/${id}_d_results/${id}_out.maf") into mira_ch
 
     script:
     """
@@ -138,6 +137,8 @@ process mira {
     """
 }
 
+mira_ch.combine(subset_comb_mira, by:0)
+    .set{reads_comb_mira}
 
 process mitobim {
     
@@ -153,15 +154,17 @@ process mitobim {
     
     output:
     file("${id}.log")
-    tuple val(id), file("${id}_noIUPAC_bb.fa") into bb_ch.into{ bb_ch; bb2_ch; bb3_ch; bb4_ch }
+    tuple val(id), file("${id}_noIUPAC_bb.fa") into bb_ch
 
     script:
     """
-    $params.mitobim -start 1 -end 100 -sample $id -ref $params.ref_strain -readpool "${id}_subset.fastq" -maf "${id}.maf" --clean --mirapath $params.mira_dir &> ${id}.log
+    $params.mitobim -start 1 -end 100 -sample $id -ref $params.ref_strain -readpool "${id}_subset.fastq" -maf "${id}_out.maf" --clean --mirapath $params.mira_dir &> ${id}.log
 
     cp ./iteration*/*_noIUPAC.fasta ./${id}_noIUPAC_bb.fa
     """
 }
+
+bb_ch.into{ bb_ch; bb2_ch; bb3_ch; bb4_ch }
 
                  
 
@@ -175,44 +178,52 @@ process BWA_Index {
     tuple val(id), file(ref) from bb_ch
 
     output:
-    tuple val("${id}"), file("${id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index.into{index_SE; index_PE}
+    tuple val("${id}"), file("${id}.fa"), path("*.fa.{amb,ann,bwt,pac,sa}") into index
 
     script:
     """
     bwa index $ref -p ${id}.fa
+    cp $ref ${id}.fa
     """
 }
 
+
+index.into{index_SE; index_PE}
+
+index_SE.combine(SE_ch, by:0)
+    .set { index_SE }
 
 process BWA_mem_SE {    
 
     tag "$id"    
     input:
-    tuple val(id), file(ref), file(index), file(reads) from index_SE.combined(SE_ch, by:0)
+    tuple val(id), file(ref), file(index), file(reads) from index_SE
 
     output:
     tuple val(id), file("${id}_mito_sorted_SE.bam") into aln_SE
 
     script:
     """
-    bwa mem $ref $reads -t ${task.cpus} -R "@RG\\tID:${id}\\tSM:${sample}\\tPL:ILLUMINA" > ${id}_mito_SE.sam 
+    bwa mem $ref $reads -t ${task.cpus} -R "@RG\\tID:${id}\\tSM:${id}\\tPL:ILLUMINA" > ${id}_mito_SE.sam 
     samtools view -bS ${id}_mito_SE.sam | samtools sort -@ ${task.cpus} -O bam -o ${id}_mito_sorted_SE.bam
     """
 }
 
+index_PE.combine(PE_ch, by:0)
+    .set { index_PE }
 
 process BWA_mem_PE {
 
     tag "$id"
     input:
-    tuple val(id), val(sample), file(ref), file(index), file(R1), file(R2) from index_PE.combined(PE_ch, by:0)
+    tuple val(id), file(ref), file(index), file(R1), file(R2) from index_PE
 
     output:
     tuple val(id), file("${id}_mito_sorted_PE.bam") into aln_PE
 
     script:
     """
-    bwa mem $ref $R1 $R2 -t ${task.cpus} -R "@RG\\tID:${id}\\tSM:${sample}\\tPL:ILLUMINA" > ${id}_mito_PE.sam
+    bwa mem $ref $R1 $R2 -t ${task.cpus} -R "@RG\\tID:${id}\\tSM:${id}\\tPL:ILLUMINA" > ${id}_mito_PE.sam
     samtools view -bS ${id}_mito_PE.sam | samtools sort -@ ${task.cpus} -O bam -o ${id}_mito_sorted_PE.bam
     """
 }
@@ -225,7 +236,7 @@ process SamtoolsSortMerge{
     tuple val(id), file(aln_SE), file(aln_PE) from aln_SE.combine(aln_PE, by:0)
     
     output:
-    tuple val(id), file("${id}_mito_sorted.bam") into sam_ch.into{ free_ch; mask_ch}
+    tuple val(id), file("${id}_mito_sorted.bam") into sam_ch
     file("${id}_mito_sorted.bam.bai")
 
     script:
@@ -235,6 +246,8 @@ process SamtoolsSortMerge{
     """
 }
 
+
+sam_ch.into{ free_ch; mask_ch}
 
 process VariantCall{
 
@@ -266,7 +279,7 @@ process mask {
     tag "$id"
 
     input:
-    tuple val(id), file(bam), file(ref) from mask_ch.combine(bb3_ch, by:0)
+    tuple val(id), file(bam), file(ref) from mask_ch.combine(bb4_ch, by:0)
     
     output:
     tuple val(id), file("${id}_mask_maxDP_*.txt") into bed_ch
@@ -281,6 +294,9 @@ process mask {
 }
 
 
+bb3_ch.combine( vcf_ch, by: 0).combine( bed_ch, by: 0)
+    .set { bb3_ch }
+
 process CallConsensus {
 
     publishDir "${params.outdir}/7.consensus/$id", mode:'move'
@@ -288,7 +304,7 @@ process CallConsensus {
     tag "$id"
 
     input:
-    tuple val(id), file(MB), file(vcf), file(mask) from bb3_ch.combine( vcf_ch, by: 0).combine( bed_ch, by: 0)
+    tuple val(id), file(MB), file(vcf), file(mask) from bb3_ch
 
     output:
     file("*")
