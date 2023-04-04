@@ -14,13 +14,22 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
    ```
 3) Edit nextflow.config file:
    ```bash
-   mitobim = "/PATH/TO/MITObim.pl"                                    #path to MITObim script
-   mitobimRef = "/PATH/TO/lycPyr_mtDNA.fa"                            #refernce for mitobim and mira
-   ref_strain = "lycPyr_mtDNA"                                        #name of refernce for mitobim and mira
-   mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"     #path to mira
-   mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"      #path to mira dir
+   mitobim = "/PATH/TO/MITObim.pl"                                     #path to MITObim script
+   mitobimRef = "/PATH/TO/MTDNASEED_ref.fa"                            #refernce for mitobim and mira
+   ref_strain = "MTDNASEED_ref"                                        #name of refernce for mitobim and mira
+   mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"      #path to mira
+   mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"       #path to mira dir
    ```
-4) Run Mitomania workflow:
+4) Input tab separated file:
+  ```bash 
+  Individual   Unpaired_fn R1_fn R2_fn n<br>
+ind1 /Absolute/PATH/ind1_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind1_lib1_R1.fa.gz /Absolute/PATH/ind1_lib1_R2.fa.gz  n<br>
+ind1 /Absolute/PATH/ind1_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind1_lib2_R1.fa.gz /Absolute/PATH/ind1_lib2_R2.fa.gz  n<br>
+ind2 /Absolute/PATH/ind2_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind2_lib1_R1.fa.gz /Absolute/PATH/ind2_lib1_R2.fa.gz  n<br>
+ind2 /Absolute/PATH/ind2_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind2_lib2_R1.fa.gz /Absolute/PATH/ind2_lib2_R2.fa.gz  n<br>
+
+
+5) Run Mitomania workflow:
    ```bash
    nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS
    ```
