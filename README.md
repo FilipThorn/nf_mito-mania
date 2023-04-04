@@ -20,7 +20,7 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
    mira =  "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/mira"      #path to mira
    mira_dir = "/PATH/TO/mira_4.0.2_linux-gnu_x86_64_static/bin/"       #path to mira dir
    ```
-4) Input tab separated file:
+4) Input tab separated file (input_tsv):
    ```bash 
    Individual   Unpaired_fn R1_fn R2_fn 
    ind1 /Absolute/PATH/ind1_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind1_lib1_R1.fa.gz /Absolute/PATH/ind1_lib1_R2.fa.gz  
