@@ -3,7 +3,7 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
 
 ## Workflow
 
-1) Install [`nextflow`](https://www.nextflow.io/) (version >= 19.04) \
+1) Install [`nextflow`](https://www.nextflow.io/) (version >= 19.04) (if using later versions of nextflow run ```bash export NXF_DEFAULT_DSL=1```) \
    Install [`Conda`](https://conda.io/miniconda.html) (version >= 4.10) \
    Install [`mitobim`](https://github.com/chrishah/MITObim) \
    Install [`mira`](https://sourceforge.net/projects/mira-assembler/files/MIRA/stable/) 
