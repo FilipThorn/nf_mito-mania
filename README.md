@@ -31,21 +31,8 @@ ind2 /Absolute/PATH/ind2_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind2_lib2_R1.f
 
 5) Run Mitomania workflow:
    ```bash
-   nextflow run mitomania.nf --reads_MB /PATH/TO/Indivxxx_L001_U.fastq.gz --reads_PE '/PATH/TO/*_R{1,2}.fastq.gz' --reads_SE '/PATH/TO/*_U.fastq.gz' --outdir /PATH/TO/RESULTS
+   nextflow run mitomania.nf --input_tsv_fn input_tsv --outdir /PATH/TO/RESULTS
    ```
-&nbsp;
-&nbsp;
-&nbsp;
-
-*Currently requires both paired and unpaired reads to run as well as four seperate libraries per individual. Updates to generalize the script are ongoing.*  \
-Input file structure
-```bash
-usr:~data/$ ls
-Indivxxx_L001_U.fastq.gz Indivxxx_L001_R2.fastq.gz Indivxxx_L001_R1.fastq.gz 
-Indivxxx_L002_U.fastq.gz Indivxxx_L002_R2.fastq.gz Indivxxx_L002_R1.fastq.gz
-Indivxxx_L003_U.fastq.gz Indivxxx_L003_R2.fastq.gz Indivxxx_L003_R1.fastq.gz
-Indivxxx_L004_U.fastq.gz Indivxxx_L004_R2.fastq.gz Indivxxx_L004_R1.fastq.gz 
-```
 &nbsp;
 &nbsp;
 
