@@ -22,12 +22,12 @@ Nextflow pipeline that assembles mitochondria scaffolds using MITObim, checks th
    ```
 4) Input tab separated file:
   ```bash 
-  Individual   Unpaired_fn R1_fn R2_fn n<br>
-ind1 /Absolute/PATH/ind1_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind1_lib1_R1.fa.gz /Absolute/PATH/ind1_lib1_R2.fa.gz  n<br>
-ind1 /Absolute/PATH/ind1_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind1_lib2_R1.fa.gz /Absolute/PATH/ind1_lib2_R2.fa.gz  n<br>
-ind2 /Absolute/PATH/ind2_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind2_lib1_R1.fa.gz /Absolute/PATH/ind2_lib1_R2.fa.gz  n<br>
-ind2 /Absolute/PATH/ind2_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind2_lib2_R1.fa.gz /Absolute/PATH/ind2_lib2_R2.fa.gz  n<br>
-
+  Individual   Unpaired_fn R1_fn R2_fn 
+ind1 /Absolute/PATH/ind1_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind1_lib1_R1.fa.gz /Absolute/PATH/ind1_lib1_R2.fa.gz  
+ind1 /Absolute/PATH/ind1_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind1_lib2_R1.fa.gz /Absolute/PATH/ind1_lib2_R2.fa.gz  
+ind2 /Absolute/PATH/ind2_unpaired_lib1_reads.fa.gz /Absolute/PATH/ind2_lib1_R1.fa.gz /Absolute/PATH/ind2_lib1_R2.fa.gz  
+ind2 /Absolute/PATH/ind2_unpaired_lib2_reads.fa.gz /Absolute/PATH/ind2_lib2_R1.fa.gz /Absolute/PATH/ind2_lib2_R2.fa.gz  
+```
 
 5) Run Mitomania workflow:
    ```bash
